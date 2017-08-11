@@ -3,7 +3,7 @@ import sqlite3_transactions = require('sqlite3-transactions');
 
 sqlite3.verbose();
 
-let db: sqlite3_transactions.TransactionDatabase = new sqlite3_transactions.TransactionDatabase(new sqlite3.Database('chain.sqlite3', () => {}));
+let db: sqlite3_transactions.TransactionDatabase = new sqlite3_transactions.TransactionDatabase(new sqlite3.Database('chain.sqlite3', () => { }));
 
 function createTable() {
     console.log("createTable lorem");
@@ -24,21 +24,27 @@ function insertRows() {
             stmt.run("Ipsum " + i);
         }
 
-        stmt.finalize(readAllRows);
-        transaction.commit((error) => {})
-    });
-}
-/*
-function readAllRows() {
-    console.log("readAllRows lorem");
-    db.all("SELECT rowid AS id, info FROM lorem", (err, rows) => {
-        rows.forEach(row => {
-            console.log(row.id + ": " + row.info);
-        });
-        readSomeRows();
+        stmt.finalize();
+        transaction.commit((error) => {
+            readAllRows();
+        })
     });
 }
 
+function readAllRows() {
+    console.log("readAllRows lorem");
+    db.beginTransaction((error, transaction) => {
+        transaction.all("SELECT rowid AS id, info FROM lorem", (err, rows) => {
+            rows.forEach(row => {
+                console.log(row.id + ": " + row.info);
+            });
+            //readSomeRows();
+        });
+        transaction.commit((error) => {});
+    });
+}
+
+/*
 function readSomeRows() {
     console.log("readAllRows lorem");
     db.each("SELECT rowid AS id, info FROM lorem WHERE rowid < ? ", 5, (err, row) => {
